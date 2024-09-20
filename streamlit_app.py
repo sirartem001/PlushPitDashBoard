@@ -17,7 +17,7 @@ headers = {
     'Content-Type': 'application/json'
 }
 
-st.set_page_config(page_title="Количество товаров на складах", page_icon="🎬")
+st.set_page_config(page_title="Количество товаров на складах")
 st.title("Количество товаров на складах")
 
 
