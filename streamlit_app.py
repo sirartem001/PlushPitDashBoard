@@ -135,19 +135,70 @@ def get_pivot():
     df = df.fillna(0)
     return df
 
-def foo(x, y, z, w):
-    return x - y - z - w
+def get_transfer_data(order_id):
+    body = {
+        "page": 1,
+        "page_size": 100,
+        "supply_order_id": order_id
+    }
+    response = requests.post(API_URL + "/v1/supply-order/items", json=body, headers=headers)
+    jason = response.json()
+    if 'items' not in jason:
+        ERROR = str(jason['message'])
+        return pd.DataFrame({'offer_id': [], 'quantity': []})
+    with open('tmp.json', 'w') as json_file:
+        json.dump(jason['items'], json_file, indent=4)
+    df = pd.read_json('tmp.json')
+    return df.drop(columns=['icon_path', 'sku', 'name'])
+    
+
+
+def get_ozon_transfer():
+    body = {
+        "dir": "DESC",
+        "filter": {"states": [
+          "ORDER_STATE_IN_TRANSIT"
+          ] 
+        },
+        "paging": {
+          "from_supply_order_id": 0,
+          "limit": 100
+          }
+    }
+    response = requests.post(API_URL + "/v2/supply-order/list", json=body, headers=headers)
+    jason = response.json()
+    if 'supply_order_id' not in jason:
+        ERROR = str(jason['message'])
+        return pd.DataFrame({'offer_id': [], 'quantity': []})
+    with open('tmp.json', 'w') as json_file:
+        json.dump(jason['supply_order_id'], json_file, indent=4)
+    id = pd.read_json('tmp.json').values.tolist()
+    order_id = []
+    for i in id:
+      order_id += i
+    df = pd.DataFrame({'offer_id':[], 'quantity':[]})
+    for i in order_id:
+      df = pd.concat([df, get_transfer_data(i)])
+    df = df.groupby('offer_id')['quantity'].sum().reset_index()
+    df = resolve_x2(df, ['quantity'])
+    df.columns = ['offer_id', 'transfer']
+    return df
+
+def foo(x, y, z, w, e):
+    return x - y - z - w - e
 
 @st.cache_data
 def load_data():
     pivot = get_pivot()
     in_way = get_in_way()
+    trans = get_ozon_transfer()
     fbo = get_fbo()
     result = pd.merge(pivot, in_way, on="offer_id", how="outer")
     result = pd.merge(result, fbo, on="offer_id", how="outer")
+    result = pd.merge(result, trans, on="offer_id", how="outer")
     result = result.fillna(0)
-    result['warehouse'] = result.apply(lambda x: foo(x.pivot, x.reserved, x.in_way, x.present), axis=1)
-    return result
+    result['warehouse'] = result.apply(lambda x: foo(x.pivot, x.reserved, x.in_way, x.present, x.transfer), axis=1)
+    return result.reset_index()
 
 df = load_data()
 
