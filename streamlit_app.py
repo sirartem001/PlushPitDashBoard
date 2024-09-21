@@ -152,6 +152,7 @@ def load_data():
 df = load_data()
 
 def refresh():
+    load_data.clear()
     df = load_data()
     TIME = str(now.year) + '-' + str(now.month).zfill(2) + '-' + str(now.day).zfill(2) + 'T' + str(now.hour).zfill(
         2) + ':' + str(now.minute).zfill(2) + ':' + str(now.second).zfill(2) + '.000Z'
