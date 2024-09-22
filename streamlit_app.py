@@ -11,8 +11,6 @@ API_KEY = '22c5ec5b-5e3f-4002-afca-95fbbdae08aa'
 CLIENT_ID = '1997569'
 ERROR = ""
 now = datetime.now()
-TIME = str(now.year) + '-' + str(now.month).zfill(2) + '-' + str(now.day).zfill(2) + 'T' + str(now.hour).zfill(
-        2) + ':' + str(now.minute).zfill(2) + ':' + str(now.second).zfill(2) + '.000Z'
 headers = {
     'Client-Id': CLIENT_ID,
     'Api-Key': API_KEY,
@@ -189,6 +187,8 @@ def foo(x, y, z, w, e):
 
 @st.cache_data
 def load_data():
+    TIME = str(now.year) + '-' + str(now.month).zfill(2) + '-' + str(now.day).zfill(2) + ' ' + str(now.hour + 3).zfill(
+        2) + ':' + str(now.minute).zfill(2) + ':' + str(now.second).zfill(2)
     pivot = get_pivot()
     in_way = get_in_way()
     trans = get_ozon_transfer()
@@ -198,15 +198,13 @@ def load_data():
     result = pd.merge(result, trans, on="offer_id", how="outer")
     result = result.fillna(0)
     result['warehouse'] = result.apply(lambda x: foo(x.pivot, x.reserved, x.in_way, x.present, x.transfer), axis=1)
-    return result.reset_index()
+    return result.reset_index(), TIME
 
-df = load_data()
+df, TIME = load_data()
 
 def refresh():
     load_data.clear()
-    df = load_data()
-    TIME = str(now.year) + '-' + str(now.month).zfill(2) + '-' + str(now.day).zfill(2) + 'T' + str(now.hour).zfill(
-        2) + ':' + str(now.minute).zfill(2) + ':' + str(now.second).zfill(2) + '.000Z'
+    df, TIME = load_data()
 
 st.text("Последнее обновление: " +TIME)
 st.button("↻ refresh", on_click=refresh)
