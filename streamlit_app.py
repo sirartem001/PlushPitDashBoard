@@ -154,9 +154,13 @@ def get_transfer_data(order_id):
 def get_ozon_transfer():
     body = {
         "dir": "DESC",
-        "filter": {"states": [
-          "ORDER_STATE_IN_TRANSIT"
-          ] 
+        "filter": {
+            "states": [
+                "ORDER_STATE_IN_TRANSIT",
+                "ORDER_STATE_DATA_FILLING",
+                "ORDER_STATE_READY_TO_SUPPLY",
+                "ORDER_STATE_ACCEPTED_AT_SUPPLY_WAREHOUSE"
+            ]
         },
         "paging": {
           "from_supply_order_id": 0,
@@ -197,6 +201,7 @@ def load_data():
     result = pd.merge(result, fbo, on="offer_id", how="outer")
     result = pd.merge(result, trans, on="offer_id", how="outer")
     result = result.fillna(0)
+    ERROR = ""
     result['warehouse'] = result.apply(lambda x: foo(x.pivot, x.reserved, x.in_way, x.present, x.transfer), axis=1)
     return result.reset_index(), TIME
 
@@ -214,3 +219,8 @@ st.dataframe(
 )
 st.text(ERROR)
 ERROR = ""
+st.text("pivot - общий остаток")
+st.text("in_way - едут от склада Озон до клиента")
+st.text("present - лежат на складе Озон")
+st.text("reserved - зарезервированны на складе Озон")
+st.text("warehouse - лежат на нашем складе")
