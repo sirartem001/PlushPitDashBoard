@@ -79,8 +79,8 @@ def get_ozon_warehouse_state(last_id):
     last = df.iloc[0]['last_id']
     df = df['items'].apply(pd.Series)
     df = pd.concat([df, df['stocks'].apply(pd.Series)], axis=1)
-    df.columns = ['0', 'offer_id', '1', '2', '3', '4']
-    df = df.drop(columns=['1', '0', '2', '4'])
+    df.columns = ['0', 'offer_id', '1', '2', '3', '4', '5']
+    df = df.drop(columns=['1', '0', '2', '4', '5'])
     df = pd.concat([df, df['3'].apply(pd.Series)], axis=1)
     df = df.drop(columns=['3', 'type'])
     df = resolve_x2(df, ['present', 'reserved'])
@@ -123,7 +123,7 @@ def get_in_way():
 
 def get_pivot():
     response = requests.get(
-        'https://docs.google.com/spreadsheets/d/12pb0_QUhnZDQ6eDb87Wlj7w0L5r9VV0dccAvzpx41KU/gviz/tq?tqx=out:csv&sheet={Pivot}')
+        'https://docs.google.com/spreadsheets/d/12pb0_QUhnZDQ6eDb87Wlj7w0L5r9VV0dccAvzpx41KU/gviz/tq?tqx=out:csv&gid=1823642991')
     assert response.status_code == 200, 'Wrong status code'
     df = pd.read_csv(io.StringIO(response.text))
     df = df[['Сводная по остаткам', 'Unnamed: 2']]
