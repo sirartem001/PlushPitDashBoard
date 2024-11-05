@@ -82,7 +82,7 @@ def get_ozon_warehouse_state(last_id):
     df = df.drop(columns=['product_id', 0, 2])
     df = pd.concat([df, df[1].apply(pd.Series)], axis=1)
     df = df.drop(columns=[1, 'type'])
-    df = resolve_x2(df[['present', 'reserved']], ['present', 'reserved'])
+    df = resolve_x2(df[['offer_id', 'present', 'reserved']], ['present', 'reserved'])
     return df, last
 
 def get_fbo():
