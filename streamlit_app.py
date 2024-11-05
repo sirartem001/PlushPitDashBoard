@@ -85,6 +85,7 @@ def get_ozon_warehouse_state(last_id):
     df = df.drop(columns=['3', 'type'])
     df = resolve_x2(df, ['present', 'reserved'])
     return df, last
+оли
 
 def get_fbo():
     df, last_id = get_ozon_warehouse_state("")
