@@ -272,6 +272,5 @@ with tab2:
     st.text("Последнее обновление: " +TIMEPrice)
     st.button("↻ refresh", on_click=refreshPrice, key=1)
     st.table(
-        Price.sort_values("offer_id"),
-        use_container_width=True
+        Price.sort_values("offer_id")
     )
