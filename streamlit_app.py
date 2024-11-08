@@ -271,7 +271,7 @@ with tab2:
     Price, TIMEPrice = load_dataPrice()
     st.text("Последнее обновление: " +TIMEPrice)
     st.button("↻ refresh", on_click=refreshPrice, key=1)
-    st.dataframe(
+    st.table(
         Price.sort_values("offer_id"),
         use_container_width=True
     )
