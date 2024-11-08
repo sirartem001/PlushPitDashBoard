@@ -189,7 +189,7 @@ def foo(x, y, z, w, e):
     return x - y - z - w - e
 
 @st.cache_data
-def load_data():
+def load_dataWareHouse():
     TIME = str(now.year) + '-' + str(now.month).zfill(2) + '-' + str(now.day).zfill(2) + ' ' + str(now.hour + 3).zfill(
         2) + ':' + str(now.minute).zfill(2) + ':' + str(now.second).zfill(2)
     pivot = get_pivot()
@@ -204,22 +204,74 @@ def load_data():
     result['warehouse'] = result.apply(lambda x: foo(x.pivot, x.reserved, x.in_way, x.present, x.transfer), axis=1)
     return result.reset_index(), TIME
 
-df, TIME = load_data()
+def refreshWareHouse():
+    load_dataWareHouse.clear()
+    df, TIMEWareHouse = load_dataWareHouse()
 
-def refresh():
-    load_data.clear()
-    df, TIME = load_data()
 
-st.text("Последнее обновление: " +TIME)
-st.button("↻ refresh", on_click=refresh)
-st.dataframe(
-    df.sort_values("offer_id"),
-    use_container_width=True
-)
-st.text(ERROR)
-ERROR = ""
-st.text("pivot - общий остаток")
-st.text("in_way - едут от склада Озон до клиента")
-st.text("present - лежат на складе Озон")
-st.text("reserved - зарезервированны на складе Озон")
-st.text("warehouse - лежат на нашем складе")
+def resolve_actions(actions):
+    titles = ''
+    if len(actions) == 0:
+        return ''
+    for action in actions:
+        titles += action['title'] + ', '
+    return titles
+
+def get_all_coast():
+    body = {
+        "filter": {
+            "visibility": "ALL"
+        },
+        "last_id": "",
+        "limit": 1000
+    }
+    response = requests.post(API_URL + "/v4/product/info/prices", json=body, headers=headers)
+    jason = response.json()
+    assert 'result' in jason, str(jason['message'])
+    return jason['result']
+    
+@st.cache_data  
+def load_dataPrice():
+    TIME = str(now.year) + '-' + str(now.month).zfill(2) + '-' + str(now.day).zfill(2) + ' ' + str(now.hour + 3).zfill(
+        2) + ':' + str(now.minute).zfill(2) + ':' + str(now.second).zfill(2)
+    df = pd.json_normalize(get_all_coast()['items'])
+    
+    df = df[['offer_id', 'price.price', 'price.marketing_price', 'commissions.sales_percent',
+             'commissions.fbo_deliv_to_customer_amount', 'marketing_actions.actions']]
+    
+    df.columns = ['offer_id', ',базовая цена', 'цена на карточке', 'комиссия за продажу', 'комиссия за доставку покупателю',
+                  'акции']
+    df['акции'] = df['акции'].apply(lambda d: d if isinstance(d, list) else [])
+    df['акции'] = df['акции'].apply(resolve_actions)
+    return df, TIME
+
+def refreshPrice():
+    load_dataPrice.clear()
+    Price, TIMEPrice = load_dataWareHouse()
+
+tab_titles = ['Остатки на складе', 'Цены']
+tab1, tab2 = st.tabs(tab_titles)
+with tab1:
+    df, TIMEWareHouse = load_dataWareHouse()
+    
+    st.text("Последнее обновление: " +TIMEWareHouse)
+    st.button("↻ refresh", on_click=refreshWareHouse)
+    st.dataframe(
+        df.sort_values("offer_id"),
+        use_container_width=True
+    )
+    st.text(ERROR)
+    ERROR = ""
+    st.text("pivot - общий остаток")
+    st.text("in_way - едут от склада Озон до клиента")
+    st.text("present - лежат на складе Озон")
+    st.text("reserved - зарезервированны на складе Озон")
+    st.text("warehouse - лежат на нашем складе")
+with tab2:
+    Price, TIMEPrice = load_dataPrice()
+    st.text("Последнее обновление: " +TIMEPrice)
+    st.button("↻ refresh", on_click=refreshPrice)
+    st.dataframe(
+        Price.sort_values("offer_id"),
+        use_container_width=True
+    )
