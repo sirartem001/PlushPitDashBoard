@@ -234,15 +234,16 @@ def get_all_coast():
 def load_dataPrice():
     TIME = str(now.year) + '-' + str(now.month).zfill(2) + '-' + str(now.day).zfill(2) + ' ' + str(now.hour + 3).zfill(
         2) + ':' + str(now.minute).zfill(2) + ':' + str(now.second).zfill(2)
-    df = pd.json_normalize(get_all_coast()['items'])
+    df1 = pd.json_normalize(get_all_coast()['items'])
     
-    df = df[['offer_id', 'price.price', 'price.marketing_price', 'commissions.sales_percent',
+    df1 = df1[['offer_id', 'price.price', 'price.marketing_price', 'commissions.sales_percent',
              'commissions.fbo_deliv_to_customer_amount', 'marketing_actions.actions']]
     
-    df.columns = ['offer_id', ',базовая цена', 'цена на карточке', 'комиссия за продажу', 'комиссия за доставку покупателю',
+    df1.columns = ['offer_id', ',базовая цена', 'цена на карточке', 'комиссия за продажу', 'комиссия за доставку покупателю',
                   'акции']
-    df['акции'] = df['акции'].apply(lambda d: d if isinstance(d, list) else [])
-    df['акции'] = df['акции'].apply(resolve_actions)
+    df1['акции'] = df1['акции'].apply(lambda d: d if isinstance(d, list) else [])
+    df1['акции'] = df1['акции'].apply(resolve_actions)
+    df1['комиссия за продажу'] = df1['комиссия за продажу'] * df1['цена на карточке'] * 0.01
     return df, TIME
 
 def refreshPrice():
