@@ -214,7 +214,7 @@ def resolve_actions(actions):
     if len(actions) == 0:
         return ''
     for action in actions:
-        titles += action['title'] + ', '
+        titles += action['title'] + '\n'
     return titles
 
 def get_all_coast():
