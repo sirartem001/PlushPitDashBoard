@@ -243,7 +243,7 @@ def load_dataPrice():
                   'акции']
     df1['акции'] = df1['акции'].apply(lambda d: d if isinstance(d, list) else [])
     df1['акции'] = df1['акции'].apply(resolve_actions)
-    df1['комиссия за продажу'] = 0.01 * df1['комиссия за продажу'] * df1['цена на карточке']
+    df1['комиссия за продажу'] = df1['комиссия за продажу'] * df1['цена на карточке'] / 100
     return df, TIME
 
 def refreshPrice():
