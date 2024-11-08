@@ -17,8 +17,7 @@ headers = {
     'Content-Type': 'application/json'
 }
 
-st.set_page_config(layout="wide")
-st.set_page_config(page_title="PlushPit DashBoard")
+st.set_page_config(layout="wide", page_title="PlushPit DashBoard")
 st.title("PlushPit DashBoard")
 
 
