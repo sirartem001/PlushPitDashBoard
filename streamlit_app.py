@@ -17,6 +17,7 @@ headers = {
     'Content-Type': 'application/json'
 }
 
+st.set_page_config(layout="wide")
 st.set_page_config(page_title="PlushPit DashBoard")
 st.title("PlushPit DashBoard")
 
@@ -214,7 +215,7 @@ def resolve_actions(actions):
     if len(actions) == 0:
         return ''
     for action in actions:
-        titles += action['title'] + ';\n'
+        titles += action['title'] + '; '
     return titles
 
 def get_all_coast():
