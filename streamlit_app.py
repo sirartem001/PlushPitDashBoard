@@ -244,7 +244,7 @@ def load_dataPrice():
     df1['акции'] = df1['акции'].apply(lambda d: d if isinstance(d, list) else [])
     df1['акции'] = df1['акции'].apply(resolve_actions)
     df1['комиссия за продажу'] = pd.to_numeric(pd.to_numeric(df1['комиссия за продажу']) * pd.to_numeric(df1['цена на карточке'])).div(100.)
-    return df, TIME
+    return df1, TIME
 
 def refreshPrice():
     load_dataPrice.clear()
