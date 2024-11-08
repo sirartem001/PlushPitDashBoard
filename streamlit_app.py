@@ -255,7 +255,7 @@ with tab1:
     df, TIMEWareHouse = load_dataWareHouse()
     
     st.text("Последнее обновление: " +TIMEWareHouse)
-    st.button("↻ refresh", on_click=refreshWareHouse)
+    st.button("↻ refresh", on_click=refreshWareHouse, key=0)
     st.dataframe(
         df.sort_values("offer_id"),
         use_container_width=True
@@ -270,7 +270,7 @@ with tab1:
 with tab2:
     Price, TIMEPrice = load_dataPrice()
     st.text("Последнее обновление: " +TIMEPrice)
-    st.button("↻ refresh", on_click=refreshPrice)
+    st.button("↻ refresh", on_click=refreshPrice, key=1)
     st.dataframe(
         Price.sort_values("offer_id"),
         use_container_width=True
