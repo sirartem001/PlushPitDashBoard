@@ -98,7 +98,6 @@ def print_graph_for_offer_id(offer_ids):
             },
             "language": "EN"
         })
-        sleep(1)
         link = get_report_link(ass[1])
         report = pd.read_csv(link[1], sep=';')
         orders = report[['Article code', 'Quantity', 'Accepted for processing', 'Status']]
@@ -106,14 +105,5 @@ def print_graph_for_offer_id(offer_ids):
             columns={'Article code': 'article', 'Quantity': 'quantity', 'Accepted for processing': 'date',
                      'Status': 'status'})
         orders['date'] = orders['date'].apply(get_date)
-        fig = px.bar(orders, x="date", y="quantity", color="status", title=offer_id)
-        traces.append([[], offer_id])
-        for trace in range(len(fig['data'])):
-            traces[-1][0].append(fig["data"][trace])
-    this_figure = make_subplots(rows=len(offer_ids), cols=1, subplot_titles=[traces[i][1] for i in range(len(traces))])
-    for i in range(len(traces)):
-        for trace in traces[i][0]:
-            this_figure.add_trace(trace, row=i + 1, col=1)
-    height = 400 * len(traces)
-    this_figure.update_layout(height=height)
-    st.plotly_chart(this_figure, use_container_width=True, height=height)
+        fig = px.bar(orders, x="date", y="quantity", color="status", title=offer_id, barmode='relative')
+        st.plotly_chart(fig)
