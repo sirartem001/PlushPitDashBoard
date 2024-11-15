@@ -85,7 +85,7 @@ def print_graph_for_offer_id(offer_ids):
         ass = create_orders_report(data={
             "filter": {
                 "processed_at_from": date_from.strftime('%Y-%m-%d') + "T00:00:00.861Z",
-                "processed_at_to": date_to.strftime('%Y-%m-%d') + "T00:00:00.861Z",
+                "processed_at_to": date_to.strftime('%Y-%m-%d') + "T23:59:59.861Z",
                 "delivery_schema": [
                     "fbo"
                 ],
@@ -105,5 +105,12 @@ def print_graph_for_offer_id(offer_ids):
             columns={'Article code': 'article', 'Quantity': 'quantity', 'Accepted for processing': 'date',
                      'Status': 'status'})
         orders['date'] = orders['date'].apply(get_date)
-        fig = px.bar(orders, x="date", y="quantity", color="status", title=offer_id, barmode='relative')
+        fig = px.bar(orders, x="date", y="quantity", color="status", title=offer_id, barmode='relative',
+                     color_discrete_map={
+                         "Delivered": '#00FF00',
+                         "Canceled": '#FF8080',
+                         "In transit": "#FFB266",
+                         "Awaiting packaging": "#FFFF40",
+                         "Awaiting shipment": "#A0A0FF"
+                     })
         st.plotly_chart(fig)
