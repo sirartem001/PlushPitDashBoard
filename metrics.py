@@ -80,6 +80,8 @@ def print_graph_for_offer_id(offer_ids):
     date_to = datetime.date.today()
     delta = datetime.timedelta(30)
     date_from = date_to - delta
+    delta = datetime.timedelta(1)
+    date_to += delta
     traces = []
     for offer_id in offer_ids:
         ass = create_orders_report(data={
