@@ -73,7 +73,7 @@ def get_offer_id_list():
 
 
 def get_date(date):
-    return datetime.date(date[0:2], date[4:6], date[8:10]) + datetime.timedelta(0, 3)
+    return datetime.date(int(date[0:2]), int(date[4:6]), int(date[8:10])) + datetime.timedelta(0, 3)
 
 
 def print_graph_for_offer_id(offer_ids):
