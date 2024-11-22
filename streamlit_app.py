@@ -6,6 +6,7 @@ import io
 import datetime
 import requests
 from metrics import *
+import paramiko
 
 API_URL = 'https://api-seller.ozon.ru'
 API_KEY = '22c5ec5b-5e3f-4002-afca-95fbbdae08aa'
@@ -260,8 +261,8 @@ def refreshPrice():
     Price, TIMEPrice = load_dataWareHouse()
 
 
-tab_titles = ['Остатки на складе', 'Цены', 'Графики метрик']
-tab1, tab2, tab3 = st.tabs(tab_titles)
+tab_titles = ['Остатки на складе', 'Цены', 'Графики метрик', 'Параметры автоцен']
+tab1, tab2, tab3, tab4 = st.tabs(tab_titles)
 with tab1:
     dfWareHouse, TIMEWareHouse = load_dataWareHouse()
 
@@ -287,6 +288,8 @@ with tab2:
     )
 options = []
 articl = []
+
+
 def plot():
     article = []
     for i in range(len(options)):
@@ -305,3 +308,22 @@ with tab3:
         options.append(columns[col % 5].checkbox(offer_id))
         col += 1
     st.button("Отрисовать графики", on_click=plot, key=2)
+
+with tab4:
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+    source_ip = "147.45.254.148"
+    source_username = "root"
+    source_password = "u-W??cw#Vr7iMS"
+    ssh.connect(source_ip, username=source_username, password=source_password)
+    sftp = ssh.open_sftp()
+    file_to_transfer = '/root/PlushPit/PlushPitFinance/price_list.csv'
+    destination_path = 'price_list.csv'
+
+    sftp.get(file_to_transfer, destination_path)
+    sftp.close()
+    ssh.close()
+    df = pd.read_csv("price_list.csv").drop(columns='Unnamed: 0')
+    st.dataframe(df)
+
