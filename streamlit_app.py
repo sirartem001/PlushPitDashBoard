@@ -325,5 +325,5 @@ with tab4:
     sftp.close()
     ssh.close()
     df = pd.read_csv("price_list.csv").drop(columns='Unnamed: 0')
-    st.dataframe(df)
+    st.dataframe(df, use_container_width=True)
 
