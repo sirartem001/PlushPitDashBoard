@@ -325,5 +325,7 @@ with tab4:
     sftp.close()
     ssh.close()
     df = pd.read_csv("price_list.csv").drop(columns='Unnamed: 0')
-    st.dataframe(df, use_container_width=True)
+    subset = df[['цена норм', 'цена от Артема']]
+    df['цена базовая'] = subset.max(axis=1)
+    st.dataframe(df[['Артикул', 'Группа', 'цена базовая', 'цена мин']], use_container_width=True)
 
