@@ -7,6 +7,9 @@ import datetime
 import requests
 from metrics import *
 import paramiko
+from Turnover import turnover, turnover_for_month
+import plotly.express as px
+import plotly.graph_objs as go
 
 API_URL = 'https://api-seller.ozon.ru'
 API_KEY = '22c5ec5b-5e3f-4002-afca-95fbbdae08aa'
@@ -261,8 +264,8 @@ def refreshPrice():
     Price, TIMEPrice = load_dataWareHouse()
 
 
-tab_titles = ['Остатки на складе', 'Цены', 'Графики метрик', 'Параметры автоцен']
-tab1, tab2, tab3, tab4 = st.tabs(tab_titles)
+tab_titles = ['Остатки на складе', 'Цены', 'Графики метрик', 'Параметры автоцен', 'Оборачиваемость']
+tab1, tab2, tab3, tab4, tab5 = st.tabs(tab_titles)
 with tab1:
     dfWareHouse, TIMEWareHouse = load_dataWareHouse()
 
@@ -287,6 +290,7 @@ with tab2:
         Price.sort_values("offer_id")
     )
 options = []
+options_turnover = []
 articl = []
 
 
@@ -297,6 +301,28 @@ def plot():
             article.append(offer_ids[i])
     with tab3:
         print_graph_for_offer_id(article)
+
+
+offer_ids_to = []
+
+
+def plot_turnover(turn_over_month):
+    article = []
+    for i in range(len(options_turnover)):
+        if options_turnover[i]:
+            article.append(offer_ids_to[i])
+    for i in range(len(turn_over_month)):
+        turn_over_month[i][0] = turn_over_month[i][0].merge(pd.Series(article, name='offer_id'), how='right', left_on='offer_id', right_on='offer_id')
+    fig = go.Figure()
+    for offer in article:
+        days = []
+        tover = []
+        for date in turn_over_month:
+            tover.append(date[0][date[0]['offer_id'] == offer].values[0, 1])
+            days.append(date[1])
+        fig.add_trace(go.Scatter(x=days, y=tover, name=offer))
+    with tab5:
+        st.plotly_chart(fig)
 
 
 with tab3:
@@ -329,3 +355,16 @@ with tab4:
     df['цена базовая'] = subset.max(axis=1)
     st.dataframe(df[['Артикул', 'Группа', 'цена базовая', 'цена мин']], use_container_width=True)
 
+with tab5:
+    now = datetime.datetime.now()
+    turn = turnover(now)
+    st.dataframe(turn, use_container_width=True)
+    to = turnover_for_month(now)
+    st.write('Выбираем нужные артикулы:')
+    columns_turnover = st.columns(5)
+    offer_ids_to = turn['offer_id'].tolist()
+    col = 0
+    for offer_id in offer_ids_to:
+        options_turnover.append(columns_turnover[col % 5].checkbox(offer_id, key=1000 + col))
+        col += 1
+    st.button("Отрисовать график", on_click=plot_turnover, key=123, kwargs={"turn_over_month": to})
