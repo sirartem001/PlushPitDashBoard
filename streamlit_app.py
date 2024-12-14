@@ -329,6 +329,7 @@ with tab3:
     st.write('Выбираем нужные артикулы:')
     columns = st.columns(5)
     offer_ids = get_offer_id_list()
+    offer_ids.sort()
     col = 0
     for offer_id in offer_ids:
         options.append(columns[col % 5].checkbox(offer_id))
@@ -363,6 +364,7 @@ with tab5:
     st.write('Выбираем нужные артикулы:')
     columns_turnover = st.columns(5)
     offer_ids_to = turn['offer_id'].tolist()
+    offer_ids_to.sort()
     col = 0
     for offer_id in offer_ids_to:
         options_turnover.append(columns_turnover[col % 5].checkbox(offer_id, key=1000 + col))
