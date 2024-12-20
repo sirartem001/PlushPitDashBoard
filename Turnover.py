@@ -59,7 +59,7 @@ def get_offer_sku_table(offer_ids):
     body = {
         "offer_id": offer_ids
     }
-    response = requests.post(API_URL + "/v3/product/info/list", json=body, headers=headers)
+    response = requests.post(API_URL + "/v2/product/info/list", json=body, headers=headers)
     jason = response.json()
     df = pd.json_normalize(jason['result']['items'])
     return df[['offer_id', 'sku', 'marketing_price']]

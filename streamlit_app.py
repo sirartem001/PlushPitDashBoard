@@ -67,24 +67,23 @@ def get_ozon_warehouse_state(last_id):
             "visibility": "ALL"
         },
         "limit": 1000,
-        "last_id": last_id
+        "cursor": last_id
     }
     response = requests.post(API_URL + "/v4/product/info/stocks", json=body, headers=headers)
     jason = response.json()
-    if 'result' not in jason:
-        ERROR = str(jason['message'])
-        return pd.DataFrame({'offer_id': [], 'present': [], 'reserved': []})
     with open('tmp.json', 'w') as json_file:
-        json.dump(jason['result'], json_file, indent=4)
+        json.dump(jason, json_file, indent=4)
     df = pd.read_json('tmp.json')
     if df.empty:
         return pd.DataFrame(), ''
-    last = df.iloc[0]['last_id']
+    last = df.iloc[0]['cursor']
     df = df['items'].apply(pd.Series)
+
+    df = pd.concat([df.drop(columns='stocks'), df['stocks'].apply(lambda x: next((y for y in x if y['type'] == 'fbo'), None))], axis=1)
+    df.dropna(inplace=True, how='any')
+    df = df.drop(columns=['product_id'])
     df = pd.concat([df, df['stocks'].apply(pd.Series)], axis=1)
-    df = df.drop(columns=['product_id', 0, 2])
-    df = pd.concat([df, df[1].apply(pd.Series)], axis=1)
-    df = df.drop(columns=[1, 'type'])
+    df = df.drop(columns=['stocks', 'type'])
     df = resolve_x2(df[['offer_id', 'present', 'reserved']], ['present', 'reserved'])
     return df, last
 
@@ -107,7 +106,7 @@ def resolve_x2(df, column_names):
             for column_name in column_names:
                 quantity = df.loc[df['offer_id'] == string][column_name].tolist()[0]
                 if len(it) == 0:
-                    df.loc[len(df.index)] = [string[3:], quantity]
+                    df.loc[len(df.index), column_name] = quantity
                 else:
                     df.at[it[0], column_name] = quantity * 2 + df.at[it[0], column_name]
             x2_names.append(string)
@@ -234,7 +233,7 @@ def get_all_coast():
         "last_id": "",
         "limit": 1000
     }
-    response = requests.post(API_URL + "/v5/product/info/prices", json=body, headers=headers)
+    response = requests.post(API_URL + "/v4/product/info/prices", json=body, headers=headers)
     jason = response.json()
     assert 'result' in jason, str(jason['message'])
     return jason['result']
@@ -312,7 +311,8 @@ def plot_turnover(turn_over_month):
         if options_turnover[i]:
             article.append(offer_ids_to[i])
     for i in range(len(turn_over_month)):
-        turn_over_month[i][0] = turn_over_month[i][0].merge(pd.Series(article, name='offer_id'), how='right', left_on='offer_id', right_on='offer_id')
+        turn_over_month[i][0] = turn_over_month[i][0].merge(pd.Series(article, name='offer_id'), how='right',
+                                                            left_on='offer_id', right_on='offer_id')
     fig = go.Figure()
     for offer in article:
         days = []
