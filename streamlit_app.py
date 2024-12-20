@@ -69,7 +69,7 @@ def get_ozon_warehouse_state(last_id):
         "limit": 1000,
         "last_id": last_id
     }
-    response = requests.post(API_URL + "/v3/product/info/stocks", json=body, headers=headers)
+    response = requests.post(API_URL + "/v4/product/info/stocks", json=body, headers=headers)
     jason = response.json()
     if 'result' not in jason:
         ERROR = str(jason['message'])
@@ -234,7 +234,7 @@ def get_all_coast():
         "last_id": "",
         "limit": 1000
     }
-    response = requests.post(API_URL + "/v4/product/info/prices", json=body, headers=headers)
+    response = requests.post(API_URL + "/v5/product/info/prices", json=body, headers=headers)
     jason = response.json()
     assert 'result' in jason, str(jason['message'])
     return jason['result']
