@@ -144,6 +144,7 @@ def get_transfer_data(order_id):
         "supply_order_id": order_id
     }
     response = requests.post(API_URL + "/v1/supply-order/items", json=body, headers=headers)
+    st.text(response.status_code)
     jason = response.json()
     if 'items' not in jason:
         ERROR = str(jason['message'])
@@ -190,24 +191,24 @@ def get_ozon_transfer():
     return df
 
 
-def foo(x, y, z, w, e):
-    return x - y - z - w - e
+def foo(x, y, z, w):
+    return x - y - z - w
 
-
+# Подсчет остатков на складе
 @st.cache_data
 def load_dataWareHouse():
     TIME = str(now.year) + '-' + str(now.month).zfill(2) + '-' + str(now.day).zfill(2) + ' ' + str(now.hour + 3).zfill(
         2) + ':' + str(now.minute).zfill(2) + ':' + str(now.second).zfill(2)
     pivot = get_pivot()
     in_way = get_in_way()
-    trans = get_ozon_transfer()
+    # trans = get_ozon_transfer()
     fbo = get_fbo()
     result = pd.merge(pivot, in_way, on="offer_id", how="outer")
     result = pd.merge(result, fbo, on="offer_id", how="outer")
-    result = pd.merge(result, trans, on="offer_id", how="outer")
+    # result = pd.merge(result, trans, on="offer_id", how="outer")
     result = result.fillna(0)
     ERROR = ""
-    result['warehouse'] = result.apply(lambda x: foo(x.pivot, x.reserved, x.in_way, x.present, x.transfer), axis=1)
+    result['warehouse'] = result.apply(lambda x: foo(x.pivot, x.reserved, x.in_way, x.present), axis=1)
     return result.reset_index(), TIME
 
 
@@ -271,7 +272,7 @@ with tab1:
     st.text("Последнее обновление: " + TIMEWareHouse)
     st.button("↻ refresh", on_click=refreshWareHouse, key=0)
     st.dataframe(
-        dfWareHouse.sort_values("offer_id"),
+        dfWareHouse,
         use_container_width=True
     )
     st.text(ERROR)
