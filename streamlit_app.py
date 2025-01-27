@@ -115,7 +115,7 @@ def resolve_x2(df, column_names):
 
 def get_in_way():
     in_way = get_ozon_prod_state("delivering")
-    in_way = pd.concat([in_way, get_ozon_prod_state("awaiting_deliver")])
+    # in_way = pd.concat([in_way, get_ozon_prod_state("awaiting_deliver")])
     # in_way = pd.concat([in_way, get_ozon_prod_state("awaiting_packaging")])
     # in_way = pd.concat([in_way, get_ozon_prod_state("cancelled")])
     in_way = in_way.groupby('offer_id')['quantity'].sum().reset_index()
@@ -139,12 +139,9 @@ def get_pivot():
 
 def get_transfer_data(order_id):
     body = {
-        "page": 1,
-        "page_size": 100,
-        "supply_order_id": order_id
+        "posting_number": order_id
     }
-    response = requests.post(API_URL + "/v1/supply-order/items", json=body, headers=headers)
-    st.text(response.status_code)
+    response = requests.post(API_URL + "/v2/posting/fbo/get", json=body, headers=headers)
     jason = response.json()
     if 'items' not in jason:
         ERROR = str(jason['message'])
@@ -201,11 +198,11 @@ def load_dataWareHouse():
         2) + ':' + str(now.minute).zfill(2) + ':' + str(now.second).zfill(2)
     pivot = get_pivot()
     in_way = get_in_way()
-    # trans = get_ozon_transfer()
+    trans = get_ozon_transfer()
     fbo = get_fbo()
     result = pd.merge(pivot, in_way, on="offer_id", how="outer")
     result = pd.merge(result, fbo, on="offer_id", how="outer")
-    # result = pd.merge(result, trans, on="offer_id", how="outer")
+    result = pd.merge(result, trans, on="offer_id", how="outer")
     result = result.fillna(0)
     ERROR = ""
     result['warehouse'] = result.apply(lambda x: foo(x.pivot, x.reserved, x.in_way, x.present), axis=1)
