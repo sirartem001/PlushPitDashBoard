@@ -231,10 +231,9 @@ def get_all_coast():
         "last_id": "",
         "limit": 1000
     }
-    response = requests.post(API_URL + "/v4/product/info/prices", json=body, headers=headers)
+    response = requests.post(API_URL + "/v5/product/info/prices", json=body, headers=headers)
     jason = response.json()
-    assert 'result' in jason, str(jason['message'])
-    return jason['result']
+    return jason
 
 
 @st.cache_data
@@ -242,8 +241,7 @@ def load_dataPrice():
     TIME = str(now.year) + '-' + str(now.month).zfill(2) + '-' + str(now.day).zfill(2) + ' ' + str(now.hour + 3).zfill(
         2) + ':' + str(now.minute).zfill(2) + ':' + str(now.second).zfill(2)
     df1 = pd.json_normalize(get_all_coast()['items'])
-
-    df1 = df1[['offer_id', 'price.price', 'price.marketing_price', 'commissions.sales_percent',
+    df1 = df1[['offer_id', 'price.price', 'price.marketing_price', 'commissions.sales_percent_fbo',
                'commissions.fbo_deliv_to_customer_amount', 'marketing_actions.actions']]
 
     df1.columns = ['offer_id', ',базовая цена', 'цена на карточке', 'комиссия за продажу',

@@ -1,6 +1,7 @@
 import requests
 import datetime as dt
 import pandas as pd
+import streamlit as st
 
 API_URL = 'https://api-seller.ozon.ru'
 API_KEY = '22c5ec5b-5e3f-4002-afca-95fbbdae08aa'
@@ -59,10 +60,13 @@ def get_offer_sku_table(offer_ids):
     body = {
         "offer_id": offer_ids
     }
-    response = requests.post(API_URL + "/v2/product/info/list", json=body, headers=headers)
+    response = requests.post(API_URL + "/v3/product/info/list", json=body, headers=headers)
     jason = response.json()
-    df = pd.json_normalize(jason['result']['items'])
-    return df[['offer_id', 'sku', 'marketing_price']]
+    df = pd.json_normalize(jason['items'])
+    df = df[['offer_id','sources', 'marketing_price']]
+    df['sources'] = df['sources'].apply(lambda x: x[0]['sku'])
+    df.columns = ['offer_id','sku', 'marketing_price']
+    return df
 
 
 def product_list():
@@ -83,8 +87,7 @@ def get_sku(x):
 
 
 def turnover(day):
-    df = fin_trans_for_period(day - dt.timedelta(30), day)
-
+    df = fin_trans_for_period(day - dt.timedelta(28), day)
     df = df[df['operation_type'] == 'OperationAgentDeliveredToCustomer']
     df['sku'] = df['items'].apply(get_sku)
     offer_id = product_list()['offer_id'].values.tolist()
@@ -98,8 +101,8 @@ def turnover(day):
 
 
 def turnover_for_month(day):
-    df = fin_trans_for_period(day - dt.timedelta(30), day)
-    df2 = fin_trans_for_period(day - dt.timedelta(60), day - dt.timedelta(31))
+    df = fin_trans_for_period(day - dt.timedelta(28), day)
+    df2 = fin_trans_for_period(day - dt.timedelta(56), day - dt.timedelta(28))
     df = pd.concat([df, df2], axis=0)
     df = df[df['operation_type'] == 'OperationAgentDeliveredToCustomer']
     df['date'] = pd.to_datetime(df['operation_date'])

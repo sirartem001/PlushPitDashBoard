@@ -15,8 +15,7 @@ CLIENT_ID = '1997569'
 # список артикулов
 def articl_list(data):
     headers = {'Content-type': 'application/json', 'Client-Id': CLIENT_ID, 'Api-Key': API_KEY}
-    url = 'https://api-seller.ozon.ru/v2/product/list'
-    data = data
+    url = 'https://api-seller.ozon.ru/v3/product/list'
     response = r.post(url, data=json.dumps(data), headers=headers)
     if response.status_code == 200:
         answer = response.content.decode('utf-8')
